@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Code Academy - Learn by Leveling</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  :root {
+    --bg: #0d1117; --bg2: #161b22; --card: #1c2128;
+    --border: #30363d; --text: #c9d1d9; --muted: #8b949e;
+    --primary: #58a6ff; --success: #3fb950; --danger: #f85149;
+    --warning: #d29922; --purple: #a371f7; --cyan: #39d353;
+    --gold: #f0c040;
+  }
+  html, body { overflow-x: hidden; width: 100%; overscroll-behavior: none; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg); color: var(--text);
+    min-height: 100vh; padding: 12px;
+    font-size: 14px;
+    -webkit-text-size-adjust: 100%;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  /* HEADER */
+  header {
+    text-align: center; margin-bottom: 16px;
+    padding: 14px 0; border-bottom: 1px solid var(--border);
+  }
+  header h1 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 20px; font-weight: 700;
+    background: linear-gradient(90deg, #58a6ff, #a371f7, #39d353);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; margin-bottom: 4px;
+  }
+  header p { color: var(--muted); font-size: 11px; }
+
+  /* PLAYER BAR - Cấp độ, XP */
+  .player-bar {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px; margin-bottom: 14px;
+    background: linear-gradient(135deg, rgba(88,166,255,0.08), rgba(163,113,247,0.05));
+    border: 1px solid rgba(88,166,255,0.3);
+    border-radius: 12px;
+  }
+  .avatar {
+    width: 46px; height: 46px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--purple));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700; font-size: 16px; color: #fff;
+    flex-shrink: 0;
+    box-shadow: 0 0 20px rgba(88,166,255,0.5);
+  }
+  .player-info { flex: 1; min-width: 0; }
+  .player-info .name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; color: var(--text);
+    font-weight: 600; margin-bottom: 4px;
+    display: flex; justify-content: space-between;
+  }
+  .player-info .name span:last-child { color: var(--muted); font-weight: 400; font-size: 11px; }
+  .xp-bar {
+    height: 8px; background: #010409;
+    border-radius: 4px; overflow: hidden;
+    margin-bottom: 4px;
+  }
+  .xp-fill {
+    height: 100%; background: linear-gradient(90deg, var(--primary), var(--purple));
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 10px rgba(88,166,255,0.6);
+  }
+  .xp-text {
+    font-size: 10px; color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex; gap: 6px; margin-bottom: 14px;
+    overflow-x: auto; padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    padding: 8px 14px; border-radius: 8px;
+    background: var(--bg2); border: 1px solid var(--border);
+    color: var(--muted); font-size: 12px;
+    cursor: pointer; white-space: nowrap;
+    font-weight: 500; transition: 0.2s;
+    font-family: 'JetBrains Mono', monospace;
+    flex-shrink: 0;
+  }
+  .tab:hover { color: var(--text); border-color: var(--primary); }
+  .tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+  .panel {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px; margin-bottom: 14px;
+  }
+  .panel h2 {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--primary); font-size: 13px;
+    margin-bottom: 12px; padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .panel h2::before { content: '▸'; color: var(--cyan); }
+
+  /* LEVEL MAP */
+  .level-map {
+    display: flex; flex-direction: column; gap: 12px;
+  }
+  .level-group {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  .level-group.locked {
+    opacity: 0.4;
+    filter: grayscale(0.7);
+  }
+  .level-group.current {
+    border-color: var(--primary);
+    box-shadow: 0 0 25px rgba(88,166,255,0.3);
+  }
+  .level-group.completed {
+    border-color: var(--success);
+    background: linear-gradient(135deg, rgba(63,185,80,0.05), transparent);
+  }
+  .level-head {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-bottom: 10px;
+  }
+  .level-head .lv-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; font-weight: 700;
+    color: var(--text);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .level-head .lv-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; padding: 3px 8px;
+    border-radius: 10px;
+    background: rgba(88,166,255,0.15);
+    color: var(--primary);
+    font-weight: 600;
+  }
+  .level-group.locked .lv-badge {
+    background: rgba(139,148,158,0.15); color: var(--muted);
+  }
+  .level-group.completed .lv-badge {
+    background: rgba(63,185,80,0.15); color: var(--success);
+  }
+  .level-desc {
+    font-size: 11px; color: var(--muted);
+    margin-bottom: 10px; line-height: 1.5;
+  }
+  .level-lessons {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 8px;
+  }
+  .mini-lesson {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 12px;
+    cursor: pointer; transition: 0.2s;
+    display: flex; justify-content: space-between;
+    align-items: center; gap: 8px;
+    font-size: 11px;
+  }
+  .mini-lesson:hover:not(.locked) {
+    border-color: var(--primary);
+    background: rgba(88,166,255,0.05);
+  }
+  .mini-lesson.done {
+    border-color: var(--success);
+    background: rgba(63,185,80,0.05);
+  }
+  .mini-lesson.locked {
+    opacity: 0.5; cursor: not-allowed;
+  }
+  .mini-lesson .ml-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--text);
+    flex: 1; min-width: 0;
+    white-space: nowrap; overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .mini-lesson .ml-status {
+    font-size: 14px; flex-shrink: 0;
+  }
+
+  /* WORKSPACE - 2 cột */
+  .workspace {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  @media (max-width: 700px) {
+    .workspace { grid-template-columns: 1fr; }
+  }
+
+  .ws-col {
+    background: #010409;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .ws-header {
+    background: var(--card);
+    padding: 8px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    letter-spacing: 1px;
+    display: flex; justify-content: space-between;
+  }
+  .ws-header .badge {
+    color: var(--primary); font-weight: 700;
+  }
+  .ws-body {
+    padding: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    max-height: 300px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  .ws-body.preview {
+    background: #000;
+    color: var(--text);
+  }
+
+  /* Code display with char states */
+  .code-display .char {
+    transition: 0.05s;
+    white-space: pre-wrap;
+  }
+  .code-display .char.correct { color: var(--success); }
+  .code-display .char.incorrect {
+    color: var(--danger);
+    background: rgba(248,81,73,0.25);
+    border-radius: 2px;
+    text-decoration: underline wavy var(--danger);
+  }
+  .code-display .char.current {
+    background: var(--primary);
+    color: #fff;
+    border-radius: 2px;
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink { 50% { background: transparent; color: var(--text); } }
+  .code-display .char.pending { color: var(--muted); }
+
+  /* PREVIEW rendering */
+  .preview-html {
+    font-family: 'Inter', sans-serif;
+    line-height: 1.5;
+  }
+  .preview-html h1 { font-size: 20px; margin: 8px 0; color: #fff; }
+  .preview-html p { margin: 6px 0; color: #ccc; }
+  .preview-html a { color: #58a6ff; text-decoration: underline; }
+  .preview-html button {
+    padding: 6px 12px; background: var(--primary);
+    color: #fff; border: none; border-radius: 6px;
+    cursor: pointer; margin: 4px 0;
+  }
+  .preview-html input {
+    padding: 6px 10px; background: #0a0a0a;
+    border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); margin: 4px 0;
+    width: 100%;
+  }
+  .preview-html .box {
+    padding: 12px; margin: 6px 0;
+    background: var(--card); border-radius: 6px;
+  }
+
+  /* INPUT */
+  .input-area {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    min-height: 90px;
+    max-height: 260px;
+    resize: vertical;
+    outline: none;
+    transition: 0.2s;
+    -webkit-appearance: none;
+    box-sizing: border-box;
+  }
+  .input-area:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(88,166,255,0.15);
+  }
+
+  /* STATS */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px; margin-bottom: 12px;
+  }
+  .stat {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 6px; text-align: center;
+  }
+  .stat .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px; font-weight: 700;
+    color: var(--primary); margin-bottom: 2px;
+  }
+  .stat .lbl {
+    color: var(--muted); font-size: 9px;
+    letter-spacing: 0.5px; text-transform: uppercase;
+  }
+  .stat.good .num { color: var(--success); }
+  .stat.bad .num { color: var(--danger); }
+  .stat.gold .num { color: var(--gold); }
+
+  /* HINT BOX */
+  .hint-box {
+    background: rgba(88,166,255,0.08);
+    border: 1px solid rgba(88,166,255,0.3);
+    border-radius: 10px; padding: 10px 14px;
+    font-size: 12px; color: var(--text);
+    line-height: 1.5; margin-bottom: 12px;
+  }
+  .hint-box strong { color: var(--primary); }
+
+  /* ERROR ANALYSIS */
+  .error-analysis {
+    background: rgba(248,81,73,0.08);
+    border: 1px solid rgba(248,81,73,0.3);
+    border-radius: 10px; padding: 10px 14px;
+    font-size: 12px; color: var(--text);
+    margin-top: 10px; display: none;
+  }
+  .error-analysis.active { display: block; }
+  .error-analysis .title {
+    color: var(--danger); font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; margin-bottom: 6px;
+  }
+  .error-analysis ul {
+    margin-left: 16px; color: var(--muted);
+    font-size: 11px; line-height: 1.6;
+  }
+
+  /* RESULT */
+  .result-box {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px;
+    text-align: center; display: none; margin-top: 12px;
+  }
+  .result-box.active { display: block; }
+  .result-box.success {
+    border-color: var(--success);
+    background: rgba(63,185,80,0.08);
+  }
+  .result-box .big { font-size: 36px; margin-bottom: 6px; }
+  .result-box .msg {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px; font-weight: 700; margin-bottom: 4px;
+  }
+  .result-box.success .msg { color: var(--success); }
+  .result-box .sub { color: var(--muted); font-size: 11px; }
+  .result-box .xp-gain {
+    color: var(--gold); font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; margin-top: 8px; font-weight: 700;
+  }
+
+  /* BUTTONS */
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn {
+    flex: 1; min-width: 100px;
+    padding: 11px; border: none;
+    border-radius: 8px; font-size: 12px;
+    font-weight: 600; cursor: pointer;
+    transition: 0.2s; letter-spacing: 0.5px;
+    font-family: 'Inter', sans-serif;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: #4090e0; }
+  .btn-success { background: var(--success); color: #fff; }
+  .btn-success:hover:not(:disabled) { box-shadow: 0 0 20px rgba(63,185,80,0.4); }
+  .btn-success:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-muted { background: var(--border); color: var(--text); }
+  .btn-muted:hover { background: #404850; }
+  .btn-gold { background: var(--gold); color: #000; }
+  .btn-gold:hover { box-shadow: 0 0 20px rgba(240,192,64,0.5); }
+
+  /* MASTER MODE */
+  .master-mode {
+    background: linear-gradient(135deg, rgba(240,192,64,0.1), rgba(163,113,247,0.05));
+    border: 1px solid var(--gold);
+    border-radius: 12px; padding: 14px;
+    margin-bottom: 14px;
+    text-align: center;
+  }
+  .master-mode .title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; color: var(--gold);
+    font-weight: 700; margin-bottom: 6px;
+  }
+  .master-mode .desc {
+    font-size: 11px; color: var(--muted);
+    line-height: 1.5; margin-bottom: 10px;
+  }
+
+  footer {
+    text-align: center; margin-top: 24px;
+    padding: 14px 0; color: var(--muted);
+    font-size: 11px; border-top: 1px solid var(--border);
+  }
+
+  /* RANK BADGE */
+  .rank {
+    display: inline-block;
+    padding: 2px 10px; border-radius: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 1px;
+  }
+  .rank.bronze   { background: rgba(205,127,50,0.2); color: #cd7f32; }
+  .rank.silver   { background: rgba(192,192,192,0.2); color: #c0c0c0; }
+  .rank.gold     { background: rgba(240,192,64,0.2); color: #f0c040; }
+  .rank.platinum { background: rgba(88,166,255,0.2); color: #58a6ff; }
+  .rank.diamond  { background: rgba(163,113,247,0.2); color: #a371f7; }
+  .rank.master   { background: linear-gradient(90deg, #f0c040, #a371f7); color: #fff; }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>&lt;Code Academy /&gt;</h1>
+    <p>Học gõ code từng cấp độ - Nâng cấp kỹ năng</p>
+  </header>
+
+  <!-- PLAYER BAR -->
+  <div class="player-bar" id="playerBar"></div>
+
+  <!-- TABS -->
+  <div class="tabs" id="tabs"></div>
+  <div id="content"></div>
+
+  <footer>© 2026 Code Academy</footer>
+</div>
+
+<script>
+/* ============================================================
+   LEVELS - Cấp độ học
+   ============================================================ */
+const LEVELS = [
+  {
+    id: 1, name: 'Level 1 - Nhập môn', desc: 'Làm quen cú pháp cơ bản nhất',
+    xpRequired: 0, lessons: [
+      { id: 'l1_1', icon: '🌐', title: 'HTML thẻ đơn giản', code: `<h1>Hello</h1>`, hint: 'Thẻ h1 mở và đóng' },
+      { id: 'l1_2', icon: '🌐', title: 'HTML đoạn văn', code: `<p>Xin chào</p>`, hint: 'Thẻ p cho đoạn văn' },
+      { id: 'l1_3', icon: '🎨', title: 'CSS màu chữ', code: `color: red;`, hint: 'Thuộc tính color đổi màu chữ' }
+    ]
+  },
+  {
+    id: 2, name: 'Level 2 - Cơ bản', desc: 'Biến, hàm, cấu trúc đơn giản',
+    xpRequired: 100, lessons: [
+      { id: 'l2_1', icon: '⚡', title: 'JS biến', code: `let x = 10;`, hint: 'let khai báo biến' },
+      { id: 'l2_2', icon: '⚡', title: 'JS hằng', code: `const PI = 3.14;`, hint: 'const cho hằng số' },
+      { id: 'l2_3', icon: '⚡', title: 'JS hàm', code: `function add(a, b) {\n  return a + b;\n}`, hint: 'Hàm có tham số và return' }
+    ]
+  },
+  {
+    id: 3, name: 'Level 3 - Trung cấp', desc: 'Xử lý logic, DOM, sự kiện',
+    xpRequired: 300, lessons: [
+      { id: 'l3_1', icon: '🔧', title: 'JS DOM', code: `document.querySelector("#btn");`, hint: 'Chọn phần tử theo id' },
+      { id: 'l3_2', icon: '🖱️', title: 'JS sự kiện', code: `btn.addEventListener("click", () => {\n  alert("Hi");\n});`, hint: 'addEventListener gắn sự kiện' },
+      { id: 'l3_3', icon: '🐍', title: 'Python list', code: `nums = [1, 2, 3]\nnums.append(4)`, hint: 'List trong Python' }
+    ]
+  },
+  {
+    id: 4, name: 'Level 4 - Nâng cao', desc: 'OOP, API, xử lý dữ liệu',
+    xpRequired: 600, lessons: [
+      { id: 'l4_1', icon: '🏗️', title: 'Python class', code: `class User:\n    def __init__(self, name):\n        self.name = name`, hint: 'Class với __init__' },
+      { id: 'l4_2', icon: '⚙️', title: 'Node.js server', code: `const http = require('http');\nhttp.createServer((req, res) => {\n  res.end('OK');\n}).listen(3000);`, hint: 'Server HTTP cơ bản' },
+      { id: 'l4_3', icon: '🗄️', title: 'SQL JOIN', code: `SELECT u.name, o.total\nFROM users u\nJOIN orders o ON u.id = o.user_id;`, hint: 'JOIN 2 bảng' }
+    ]
+  },
+  {
+    id: 5, name: 'Level 5 - Thành thạo', desc: 'Viết code hoàn chỉnh không gợi ý',
+    xpRequired: 1000, lessons: [
+      { id: 'l5_1', icon: '🌐', title: 'HTML trang hoàn chỉnh', mode: 'master', code: `<!DOCTYPE html>\n<html>\n<head>\n  <title>Web</title>\n</head>\n<body>\n  <h1>Xin chào</h1>\n  <p>Trang web của tôi</p>\n</body>\n</html>`, hint: 'Cấu trúc HTML5 đầy đủ' },
+      { id: 'l5_2', icon: '⚡', title: 'JS app hoàn chỉnh', mode: 'master', code: `const app = {\n  data: [],\n  add(item) {\n    this.data.push(item);\n    return this.data.length;\n  }\n};`, hint: 'Object với method' },
+      { id: 'l5_3', icon: '🐍', title: 'Python script hoàn chỉnh', mode: 'master', code: `def main():\n    nums = [1, 2, 3, 4, 5]\n    total = sum(nums)\n    print(f"Tổng: {total}")\n\nif __name__ == "__main__":\n    main()`, hint: 'Script Python có main' }
+    ]
+  }
+];
+
+/* ============================================================
+   RANKS
+   ============================================================ */
+const RANKS = [
+  { xp: 0,    name: 'BRONZE',   class: 'bronze' },
+  { xp: 200,  name: 'SILVER',   class: 'silver' },
+  { xp: 500,  name: 'GOLD',     class: 'gold' },
+  { xp: 1000, name: 'PLATINUM', class: 'platinum' },
+  { xp: 2000, name: 'DIAMOND',  class: 'diamond' },
+  { xp: 5000, name: 'MASTER',   class: 'master' }
+];
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const state = {
+  currentTab: 'map',
+  currentLesson: null,
+  typed: '',
+  startTime: null,
+  correctChars: 0,
+  wrongChars: 0,
+  errorLog: [],
+  progress: JSON.parse(localStorage.getItem('code_progress') || '{"xp":0,"completed":[]}'),
+  masterMode: false
+};
+
+function saveProgress() {
+  localStorage.setItem('code_progress', JSON.stringify(state.progress));
+}
+
+function getLevel() {
+  const lv = 1 + Math.floor(state.progress.xp / 200);
+  return Math.min(lv, 50);
+}
+
+function getRank() {
+  let r = RANKS[0];
+  for (const rank of RANKS) {
+    if (state.progress.xp >= rank.xp) r = rank;
+  }
+  return r;
+}
+
+function getNextRank() {
+  for (const rank of RANKS) {
+    if (state.progress.xp < rank.xp) return rank;
+  }
+  return null;
+}
+
+function isLessonUnlocked(lessonId) {
+  // Tìm level của lesson
+  for (const lv of LEVELS) {
+    for (const lesson of lv.lessons) {
+      if (lesson.id === lessonId) {
+        return state.progress.xp >= lv.xpRequired;
+      }
+    }
+  }
+  return false;
+}
+
+function isLessonDone(lessonId) {
+  return state.progress.completed.includes(lessonId);
+}
+
+/* ============================================================
+   PLAYER BAR
+   ============================================================ */
+function renderPlayerBar() {
+  const el = document.getElementById('playerBar');
+  const lv = getLevel();
+  const rank = getRank();
+  const nextRank = getNextRank();
+  const xp = state.progress.xp;
+
+  let xpPercent = 100;
+  let xpText = `${xp} XP`;
+  if (nextRank) {
+    const prevXp = rank.xp;
+    const nextXp = nextRank.xp;
+    xpPercent = Math.round((xp - prevXp) / (nextXp - prevXp) * 100);
+    xpText = `${xp} / ${nextXp} XP (còn ${nextXp - xp})`;
+  }
+
+  el.innerHTML = `
+    <div class="avatar">${lv}</div>
+    <div class="player-info">
+      <div class="name">
+        <span>Level ${lv} • <span class="rank ${rank.class}">${rank.name}</span></span>
+        <span>${state.progress.completed.length} bài</span>
+      </div>
+      <div class="xp-bar"><div class="xp-fill" style="width:${xpPercent}%"></div></div>
+      <div class="xp-text">${xpText}</div>
+    </div>
+  `;
+}
+
+/* ============================================================
+   TABS
+   ============================================================ */
+const TABS = [
+  { id: 'map',      name: '🗺️ Bản đồ' },
+  { id: 'stats',    name: '📊 Thống kê' },
+  { id: 'reset',    name: '⚙️ Cài đặt' }
+];
+
+function renderTabs() {
+  const el = document.getElementById('tabs');
+  el.innerHTML = '';
+  TABS.forEach(t => {
+    const btn = document.createElement('div');
+    btn.className = 'tab' + (t.id === state.currentTab ? ' active' : '');
+    btn.textContent = t.name;
+    btn.addEventListener('click', () => {
+      state.currentTab = t.id;
+      state.currentLesson = null;
+      renderTabs();
+      renderContent();
+    });
+    el.appendChild(btn);
+  });
+}
+
+/* ============================================================
+   CONTENT
+   ============================================================ */
+function renderContent() {
+  const el = document.getElementById('content');
+  el.innerHTML = '';
+
+  if (state.currentTab === 'stats') return renderStats(el);
+  if (state.currentTab === 'reset') return renderReset(el);
+  if (state.currentLesson) return renderLesson(el, state.currentLesson);
+  renderMap(el);
+}
+
+/* ============================================================
+   LEVEL MAP
+   ============================================================ */
+function renderMap(el) {
+  const panel = document.createElement('div');
+  panel.className = 'panel';
+  panel.innerHTML = `<h2>🗺️ Bản đồ cấp độ</h2>`;
+
+  const map = document.createElement('div');
+  map.className = 'level-map';
+
+  LEVELS.forEach((lv, idx) => {
+    const unlocked = state.progress.xp >= lv.xpRequired;
+    const allDone = lv.lessons.every(l => isLessonDone(l.id));
+    const group = document.createElement('div');
+    group.className = 'level-group' +
+      (unlocked ? '' : ' locked') +
+      (allDone ? ' completed' : '') +
+      (unlocked && !allDone ? ' current' : '');
+
+    const lessonsHtml = lv.lessons.map(lesson => {
+      const done = isLessonDone(lesson.id);
+      const locked = !unlocked;
+      return `
+        <div class="mini-lesson ${done ? 'done' : ''} ${locked ? 'locked' : ''}" data-lesson="${lesson.id}">
+          <div class="ml-name">${lesson.icon} ${lesson.title}</div>
+          <div class="ml-status">${done ? '✅' : (locked ? '🔒' : '▶')}</div>
+        </div>
+      `;
+    }).join('');
+
+    group.innerHTML = `
+      <div class="level-head">
+        <div class="lv-title">${lv.name}</div>
+        <div class="lv-badge">${unlocked ? (allDone ? 'COMPLETED' : 'ACTIVE') : `${lv.xpRequired} XP`}</div>
+      </div>
+      <div class="level-desc">${lv.desc}</div>
+      <div class="level-lessons">${lessonsHtml}</div>
+    `;
+
+    group.querySelectorAll('.mini-lesson').forEach(el2 => {
+      if (el2.classList.contains('locked')) return;
+      el2.addEventListener('click', () => {
+        const lessonId = el2.dataset.lesson;
+        const lesson = lv.lessons.find(l => l.id === lessonId);
+        if (lesson) {
+          state.currentLesson = lesson;
+          state.currentLesson._level = lv.id;
+          state.typed = '';
+          state.startTime = null;
+          state.errorLog = [];
+          state.masterMode = lesson.mode === 'master';
+          renderContent();
+        }
+      });
+    });
+
+    map.appendChild(group);
+  });
+
+  panel.appendChild(map);
+
+  // Master mode unlock notice
+  const masterUnlocked = state.progress.xp >= 1000;
+  if (masterUnlocked) {
+    const mb = document.createElement('div');
+    mb.className = 'master-mode';
+    mb.innerHTML = `
+      <div class="title">👑 MASTER MODE ĐÃ MỞ</div>
+      <div class="desc">Bạn đã thành thạo. Giờ hãy gõ code hoàn chỉnh <strong>KHÔNG có gợi ý từng ký tự</strong>. Hệ thống chỉ chấm điểm cuối cùng.</div>
+    `;
+    panel.appendChild(mb);
+  }
+
+  el.appendChild(panel);
+}
+
+/* ============================================================
+   RENDER LESSON
+   ============================================================ */
+function renderLesson(el, lesson) {
+  const isMaster = lesson.mode === 'master';
+  const panel = document.createElement('div');
+  panel.className = 'panel';
+
+  panel.innerHTML = `
+    <h2>${isMaster ? '👑' : '📖'} ${lesson.title}</h2>
+    ${isMaster ? `
+      <div class="hint-box" style="background:rgba(240,192,64,0.08);border-color:rgba(240,192,64,0.3);">
+        <strong style="color:var(--gold);">👑 MASTER MODE:</strong> Không có gợi ý từng ký tự. Hãy đọc đề, hiểu logic, rồi gõ code hoàn chỉnh vào ô bên dưới.
+      </div>
+    ` : `
+      <div class="hint-box"><strong>💡 Gợi ý:</strong> ${lesson.hint}</div>
+    `}
+
+    <div class="stats-row">
+      <div class="stat"><div class="num" id="statCpm">0</div><div class="lbl">CPM</div></div>
+      <div class="stat good"><div class="num" id="statCorrect">0</div><div class="lbl">Đúng</div></div>
+      <div class="stat bad"><div class="num" id="statWrong">0</div><div class="lbl">Sai</div></div>
+      <div class="stat gold"><div class="num" id="statXp">+0</div><div class="lbl">XP</div></div>
+    </div>
+
+    <div class="workspace">
+      <div class="ws-col">
+        <div class="ws-header">
+          <span>📝 ĐỀ BÀI</span>
+          <span class="badge">${isMaster ? 'MASTER' : 'CODE MẪU'}</span>
+        </div>
+        <div class="ws-body code-display" id="codeDisplay"></div>
+      </div>
+      <div class="ws-col">
+        <div class="ws-header">
+          <span>👁️ TÁC PHẨM</span>
+          <span class="badge">LIVE</span>
+        </div>
+        <div class="ws-body preview" id="previewArea">
+          <div style="color:#484f58;font-size:11px;text-align:center;padding:20px;">
+            Gõ code để xem tác phẩm<br>(Preview sẽ cập nhật theo từng ký tự)
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <textarea class="input-area" id="inputArea" placeholder="Gõ code ở đây..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+
+    <div class="error-analysis" id="errorAnalysis">
+      <div class="title">🔍 PHÂN TÍCH LỖI</div>
+      <ul id="errorList"></ul>
+    </div>
+
+    <div class="result-box" id="resultBox"></div>
+
+    <div class="btn-row" style="margin-top:12px;">
+      <button class="btn btn-muted" id="btnBack">← QUAY LẠI</button>
+      <button class="btn btn-muted" id="btnReset">RESET</button>
+      <button class="btn btn-success" id="btnDone" disabled>HOÀN THÀNH ✓</button>
+    </div>
+  `;
+
+  el.appendChild(panel);
+
+  // Render code display
+  renderCodeDisplay(lesson.code, isMaster);
+
+  // Preview container
+  const previewArea = document.getElementById('previewArea');
+
+  // Input events
+  const inputArea = document.getElementById('inputArea');
+  inputArea.addEventListener('input', () => handleInput(lesson));
+  inputArea.addEventListener('keydown', (e) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const start = inputArea.selectionStart;
+      const end = inputArea.selectionEnd;
+      inputArea.value = inputArea.value.substring(0, start) + '    ' + inputArea.value.substring(end);
+      inputArea.selectionStart = inputArea.selectionEnd = start + 4;
+      handleInput(lesson);
+    }
+  });
+
+  document.getElementById('btnBack').addEventListener('click', () => {
+    state.currentLesson = null;
+    state.typed = '';
+    state.masterMode = false;
+    renderContent();
+  });
+
+  document.getElementById('btnReset').addEventListener('click', () => {
+    inputArea.value = '';
+    state.typed = '';
+    state.startTime = null;
+    state.errorLog = [];
+    handleInput(lesson);
+    document.getElementById('resultBox').classList.remove('active');
+    document.getElementById('errorAnalysis').classList.remove('active');
+    document.getElementById('btnDone').disabled = true;
+    updatePreview('', lesson);
+    inputArea.focus();
+  });
+
+  document.getElementById('btnDone').addEventListener('click', () => {
+    if (!state.progress.completed.includes(lesson.id)) {
+      state.progress.completed.push(lesson.id);
+      // Cộng XP
+      const xpGain = isMaster ? 100 : 30;
+      state.progress.xp += xpGain;
+      saveProgress();
+      renderPlayerBar();
+      showToast(`+${xpGain} XP`, 'success');
+    }
+    state.currentLesson = null;
+    state.masterMode = false;
+    renderContent();
+  });
+
+  inputArea.focus();
+}
+
+/* ============================================================
+   RENDER CODE DISPLAY
+   ============================================================ */
+function renderCodeDisplay(code, isMaster) {
+  const display = document.getElementById('codeDisplay');
+  display.innerHTML = '';
+
+  if (isMaster) {
+    // Master mode: chỉ hiện đề bài, không highlight từng ký tự
+    display.textContent = code;
+    display.style.color = 'var(--text)';
+    display.style.whiteSpace = 'pre-wrap';
+    return;
+  }
+
+  const lines = code.split('\n');
+  let charIndex = 0;
+  lines.forEach((line, lineIdx) => {
+    for (let i = 0; i < line.length; i++) {
+      const span = document.createElement('span');
+      span.className = 'char pending';
+      span.textContent = line[i];
+      span.dataset.index = charIndex;
+      display.appendChild(span);
+      charIndex++;
+    }
+    if (lineIdx < lines.length - 1) {
+      const nl = document.createElement('span');
+      nl.className = 'char pending';
+      nl.textContent = '\n';
+      nl.dataset.index = charIndex;
+      display.appendChild(nl);
+      charIndex++;
+    }
+  });
+}
+
+/* ============================================================
+   HANDLE INPUT
+   ============================================================ */
+function handleInput(lesson) {
+  const inputArea = document.getElementById('inputArea');
+  const typed = inputArea.value;
+  const target = lesson.code;
+  const isMaster = lesson.mode === 'master';
+
+  if (!state.startTime && typed.length > 0) state.startTime = Date.now();
+
+  let correct = 0, wrong = 0;
+  const errors = [];
+
+  if (!isMaster) {
+    // So từng ký tự
+    const chars = document.querySelectorAll('#codeDisplay .char');
+    chars.forEach((span, i) => {
+      span.className = 'char';
+      if (i < typed.length) {
+        if (typed[i] === target[i]) {
+          span.classList.add('correct');
+          correct++;
+        } else {
+          span.classList.add('incorrect');
+          wrong++;
+          if (errors.length < 10) {
+            errors.push(`Vị trí ${i+1}: gõ "${typed[i]}" nhưng phải là "${target[i]}"`);
+          }
+        }
+      } else if (i === typed.length) {
+        span.classList.add('current');
+      } else {
+        span.classList.add('pending');
+      }
+    });
+  } else {
+    // Master mode: so từng dòng
+    const typedLines = typed.split('\n');
+    const targetLines = target.split('\n');
+    const maxLines = Math.max(typedLines.length, targetLines.length);
+    for (let i = 0; i < maxLines; i++) {
+      const tl = typedLines[i] || '';
+      const gl = targetLines[i] || '';
+      if (tl === gl) {
+        correct += gl.length;
+      } else {
+        wrong += Math.max(tl.length, gl.length);
+        if (errors.length < 8) {
+          errors.push(`Dòng ${i+1}: ${tl !== gl ? 'chưa khớp' : 'ổn'}`);
+        }
+      }
+    }
+  }
+
+  state.correctChars = correct;
+  state.wrongChars = wrong;
+
+  document.getElementById('statCorrect').textContent = correct;
+  document.getElementById('statWrong').textContent = wrong;
+
+  // CPM
+  if (state.startTime) {
+    const minutes = (Date.now() - state.startTime) / 60000;
+    const cpm = minutes > 0 ? Math.round(typed.length / minutes) : 0;
+    document.getElementById('statCpm').textContent = cpm;
+  }
+
+  // XP ước tính
+  const xpGain = isMaster ? 100 : 30;
+  const progressPercent = target.length > 0 ? Math.min(typed.length / target.length, 1) : 0;
+  document.getElementById('statXp').textContent = '+' + Math.round(xpGain * progressPercent);
+
+  // Error analysis
+  const errorBox = document.getElementById('errorAnalysis');
+  const errorList = document.getElementById('errorList');
+  if (errors.length > 0 && typed.length > 0) {
+    errorBox.classList.add('active');
+    errorList.innerHTML = errors.map(e => `<li>${e}</li>`).join('');
+  } else {
+    errorBox.classList.remove('active');
+  }
+
+  // Update preview
+  updatePreview(typed, lesson);
+
+  // Check complete
+  const btnDone = document.getElementById('btnDone');
+  const resultBox = document.getElementById('resultBox');
+
+  const isComplete = isMaster
+    ? typed.trim() === target.trim()
+    : typed === target;
+
+  if (isComplete) {
+    btnDone.disabled = false;
+    resultBox.className = 'result-box success active';
+    const earned = isMaster ? 100 : 30;
+    resultBox.innerHTML = `
+      <div class="big">🎉</div>
+      <div class="msg">HOÀN THÀNH!</div>
+      <div class="sub">Bạn đã gõ đúng toàn bộ code.</div>
+      <div class="xp-gain">+${earned} XP</div>
+    `;
+  } else if (!isMaster && typed.length >= target.length) {
+    btnDone.disabled = true;
+    resultBox.className = 'result-box active';
+    resultBox.innerHTML = `
+      <div class="big">⚠️</div>
+      <div class="msg" style="color:var(--warning)">CHƯA ĐÚNG</div>
+      <div class="sub">Có ${wrong} ký tự sai. Xem phân tích lỗi bên dưới.</div>
+    `;
+  } else {
+    btnDone.disabled = true;
+    resultBox.classList.remove('active');
+  }
+}
+
+/* ============================================================
+   LIVE PREVIEW
+   ============================================================ */
+function updatePreview(typed, lesson) {
+  const preview = document.getElementById('previewArea');
+  if (!typed.trim()) {
+    preview.innerHTML = `<div style="color:#484f58;font-size:11px;text-align:center;padding:20px;">
+      Gõ code để xem tác phẩm<br>(Preview cập nhật theo từng ký tự)
+    </div>`;
+    return;
+  }
+
+  // Xác định loại code
+  const code = lesson.code;
+  const preview_html = `<div class="preview-html">${escapeHtml(typed)}</div>`;
+
+  if (code.startsWith('<')) {
+    // HTML - render trực tiếp
+    preview.innerHTML = `<div class="preview-html">${typed}</div>`;
+  } else if (code.startsWith('color:') || code.includes('{') && code.includes(':')) {
+    // CSS - render box demo
+    preview.innerHTML = `<div class="preview-html">
+      <div class="box" style="${typed.replace(/;/g, ';')}">Text mẫu áp dụng CSS</div>
+    </div>`;
+  } else if (code.includes('function') || code.includes('let ') || code.includes('const ') || code.includes('=>')) {
+    // JS - hiện output giả lập
+    preview.innerHTML = `<div class="preview-html">
+      <div style="color:#8b949e;font-size:11px;margin-bottom:8px;">▶ Kết quả chạy JS (mô phỏng):</div>
+      <div style="color:#3fb950;font-family:'JetBrains Mono';font-size:12px;">
+        ${escapeHtml(typed)}
+      </div>
+      <div style="color:#484f58;font-size:10px;margin-top:8px;font-style:italic;">
+        (Preview JS chỉ hiển thị code, không chạy thực tế vì lý do bảo mật)
+      </div>
+    </div>`;
+  } else if (code.includes('SELECT') || code.includes('FROM')) {
+    // SQL - hiện bảng giả lập
+    preview.innerHTML = `<div class="preview-html">
+      <div style="color:#8b949e;font-size:11px;margin-bottom:8px;">▶ Kết quả query (mô phỏng):</div>
+      <div style="overflow-x:auto;">
+        <table style="border-collapse:collapse;font-size:11px;font-family:'JetBrains Mono';">
+          <tr><th style="border:1px solid #30363d;padding:4px 8px;color:#58a6ff;">id</th><th style="border:1px solid #30363d;padding:4px 8px;color:#58a6ff;">name</th></tr>
+          <tr><td style="border:1px solid #30363d;padding:4px 8px;">1</td><td style="border:1px solid #30363d;padding:4px 8px;">Nam</td></tr>
+          <tr><td style="border:1px solid #30363d;padding:4px 8px;">2</td><td style="border:1px solid #30363d;padding:4px 8px;">Lan</td></tr>
+        </table>
+      </div>
+    </div>`;
+  } else {
+    // Python và ngôn ngữ khác - hiện code + output giả lập
+    preview.innerHTML = `<div class="preview-html">
+      <div style="color:#8b949e;font-size:11px;margin-bottom:8px;">▶ Kết quả chạy (mô phỏng):</div>
+      <div style="color:#3fb950;font-family:'JetBrains Mono';font-size:12px;white-space:pre-wrap;">
+        ${escapeHtml(typed)}
+      </div>
+    </div>`;
+  }
+}
+
+function escapeHtml(text) {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+/* ============================================================
+   STATS TAB
+   ============================================================ */
+function renderStats(el) {
+  const panel = document.createElement('div');
+  panel.className = 'panel';
+
+  const totalLessons = LEVELS.reduce((s, l) => s + l.lessons.length, 0);
+  const done = state.progress.completed.length;
+  const xp = state.progress.xp;
+  const rank = getRank();
+
+  panel.innerHTML = `
+    <h2>📊 Thống kê cá nhân</h2>
+
+    <div class="stats-row">
+      <div class="stat gold"><div class="num">${xp}</div><div class="lbl">Tổng XP</div></div>
+      <div class="stat good"><div class="num">${done}</div><div class="lbl">Bài xong</div></div>
+      <div class="stat"><div class="num">${totalLessons - done}</div><div class="lbl">Còn lại</div></div>
+      <div class="stat"><div class="num">${Math.round(done/totalLessons*100)}%</div><div class="lbl">Hoàn thành</div></div>
+    </div>
+
+    <div style="text-align:center;padding:14px;background:var(--card);border-radius:10px;margin-bottom:14px;">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">RANK HIỆN TẠI</div>
+      <div class="rank ${rank.class}" style="font-size:16px;padding:6px 20px;">${rank.name}</div>
+    </div>
+
+    <h3 style="font-family:'JetBrains Mono';font-size:12px;color:var(--text);margin:16px 0 10px;">Tiến độ từng Level</h3>
+    <div style="display:grid;gap:8px;">
+      ${LEVELS.map(lv => {
+        const lvDone = lv.lessons.filter(l => state.progress.completed.includes(l.id)).length;
+        const lvTotal = lv.lessons.length;
+        const unlocked = state.progress.xp >= lv.xpRequired;
+        return `
+          <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:12px;">${unlocked ? '' : '🔒 '}${lv.name}</span>
+            <span style="font-family:'JetBrains Mono';font-size:12px;color:${lvDone === lvTotal ? 'var(--success)' : 'var(--muted)'};font-weight:700;">${lvDone}/${lvTotal}</span>
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+
+  el.appendChild(panel);
+}
+
+/* ============================================================
+   RESET TAB
+   ============================================================ */
+function renderReset(el) {
+  const panel = document.createElement('div');
+  panel.className = 'panel';
+  panel.innerHTML = `
+    <h2>⚙️ Cài đặt</h2>
+    <div class="hint-box">
+      <strong>⚠️ Lưu ý:</strong> Xóa tiến độ sẽ reset toàn bộ XP, level, và bài đã hoàn thành về 0.
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-muted" id="btnResetProgress">🗑️ XÓA TIẾN ĐỘ</button>
+    </div>
+  `;
+  el.appendChild(panel);
+
+  document.getElementById('btnResetProgress').addEventListener('click', () => {
+    if (!confirm('XÓA TOÀN BỘ TIẾN ĐỘ? Hành động không thể hoàn tác.')) return;
+    state.progress = { xp: 0, completed: [] };
+    saveProgress();
+    renderPlayerBar();
+    state.currentTab = 'map';
+    renderTabs();
+    renderContent();
+    showToast('Đã reset tiến độ', 'success');
+  });
+}
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+function showToast(msg, type) {
+  const t = document.createElement('div');
+  t.style.cssText = `
+    position: fixed; bottom: 20px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    padding: 12px 24px;
+    background: ${type === 'success' ? 'linear-gradient(135deg, #3fb950, #2ea043)' : 'linear-gradient(135deg, #58a6ff, #a371f7)'};
+    color: #fff;
+    border-radius: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 1px;
+    opacity: 0;
+    transition: 0.3s;
+    pointer-events: none;
+    z-index: 999;
+    box-shadow: 0 0 30px rgba(88,166,255,0.6);
+  `;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  requestAnimationFrame(() => {
+    t.style.opacity = '1';
+    t.style.transform = 'translateX(-50%) translateY(0)';
+  });
+  setTimeout(() => {
+    t.style.opacity = '0';
+    t.style.transform = 'translateX(-50%) translateY(20px)';
+    setTimeout(() => t.remove(), 300);
+  }, 2000);
+}
+
+/* ============================================================
+   INIT
+   ============================================================ */
+renderPlayerBar();
+renderTabs();
+renderContent();
+</script>
+</body>
+</html>
